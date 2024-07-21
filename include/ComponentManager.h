@@ -7,8 +7,8 @@
 
 #include <unordered_map>
 #include <array>
-#include <bitset>
 #include <cstdint>
+#include <typeindex>
 
 #include "Entity.h"
 #include "Component.h"
@@ -23,24 +23,23 @@ public:
     template<ComponentType T>
     void addComponent(Entity::Id entityId, T component);
 
-    // TODO const ?
     template<ComponentType T>
     T& getComponent(Entity::Id entityId);
 
     template<ComponentType T>
-    bool hasComponent(Entity::Id entityId) const;
+    const T& getComponent(Entity::Id entityId) const;
+
+    template<ComponentType T>
+    [[nodiscard]] bool hasComponent(Entity::Id entityId) const;
 
     template<ComponentType T>
     void removeComponent(Entity::Id entityId);
 
-    void removeAllComponents(Entity::Id entityId);
+    void entityDestroyed(Entity::Id entityId);
 
 private:
-    // TODO is the mask necessary ? we could store directly a map with a list of attached component
-    std::unordered_map<Entity::Id, std::bitset<MAX_COMPONENTS_PER_ENTITY>> entityComponentMask;
-
-    template<ComponentType T>
-    std::unordered_map<Entity::Id, T>& getComponentMap();
+    using ComponentVariant = std::variant<std::unique_ptr<Component<Position>>, std::unique_ptr<Component<Velocity>>>;
+    std::unordered_map<Entity::Id, std::unordered_map<std::type_index, ComponentVariant>> componentMaps;
 };
 
 #include "ComponentManager.tpp"

@@ -7,17 +7,18 @@
 
 #include "System.h"
 #include <vector>
-#include <memory>
+#include <typeindex>
+#include <unordered_map>
 
 class SystemManager {
 public:
     template<typename T, typename... Args>
     std::shared_ptr<T> registerSystem(Args&&... args);
 
-    void updateSystems();
+    void updateSystems() const;
 
 private:
-    std::vector<std::shared_ptr<System>> systems;
+    std::unordered_map<std::type_index, std::shared_ptr<System>> systems;
 };
 
 #include "SystemManager.tpp"

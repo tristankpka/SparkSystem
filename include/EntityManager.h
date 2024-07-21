@@ -18,25 +18,12 @@ public:
 
     Entity::Id createEntity();
     void destroyEntity(Entity::Id entityId);
-    bool isValid(Entity::Id entityId) const;
-    const std::unordered_set<Entity>& getEntities() const;
-
-    template<ComponentType T>
-    void addComponent(Entity::Id entityId, T component);
-
-    template<ComponentType T>
-    T& getComponent(Entity::Id entityId);
-
-    template<ComponentType T>
-    bool hasComponent(Entity::Id entityId) const;
-
-    template<ComponentType T>
-    void removeComponent(Entity::Id entityId);
+    [[nodiscard]] bool isValid(Entity::Id entityId) const;
+    [[nodiscard]] const std::unordered_set<Entity>& getEntities() const;
 
 private:
     Entity::Id nextId = 1;
     std::unordered_set<Entity> entities;
-    ComponentManager componentManager;
 };
 
 #include "EntityManager.tpp"

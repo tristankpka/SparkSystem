@@ -15,12 +15,11 @@ void EntityManager::destroyEntity(const Entity::Id entityId) {
     auto it = entities.find(Entity(entityId));
     if (it != entities.end()) {
         entities.erase(it);
-        componentManager.removeAllComponents(entityId);
     }
 }
 
 bool EntityManager::isValid(const Entity::Id entityId) const {
-    return entities.find(Entity(entityId)) != entities.end();
+    return entities.contains(Entity(entityId));
 }
 
 const std::unordered_set<Entity>& EntityManager::getEntities() const {

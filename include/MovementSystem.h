@@ -8,10 +8,23 @@
 #include <EntityManager.h>
 
 #include "System.h"
+#include "components/Position.h"
+#include "components/Velocity.h"
 
-class MovementSystem final : public System {
+class MovementSystem : public System {
 public:
-    void update(EntityManager& entityManager, ComponentManager& manager) override;
+    using QueryFunction = std::function<void(std::function<void(Entity::Id, Position&, const Velocity&)>)>;
+
+    explicit MovementSystem(QueryFunction query) : query(std::move(query)) {}
+
+    void update() override {
+        query([](Entity::Id entityId, Position& position, const Velocity& velocity) {
+            position.x += velocity.dx;
+            position.y += velocity.dy;
+        });
+    }
+private:
+    QueryFunction query;
 };
 
 #endif //MOVEMENTSYSTEM_H

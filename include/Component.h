@@ -7,6 +7,10 @@
 
 #include <type_traits>
 #include <cstdint>
+#include <variant>
+
+#include "components/Position.h"
+#include "components/Velocity.h"
 
 // Concept to check if a type is a valid component (i.e., is a plain data structure)
 template<typename T>
@@ -15,15 +19,20 @@ concept ValidComponent = requires {
 };
 
 template<ValidComponent T>
-class Component {
+class  Component {
 public:
-    using Id = std::uint16_t;
-    static Id getId();
+    T value;
+    Component() = default;
+    Component(const Component&) = delete; // Disallow copy
+    Component& operator=(const Component&) = delete; // Disallow copy assignment
+    Component(Component&&) noexcept {} // Allow move
+    Component& operator=(Component&&) noexcept {return *this;} // Allow move assignement
 
-private:
-    static Id nextId;
+    explicit Component(T data) : value(std::move(data)) {}
 };
 
-#include "Component.tpp"
+static_assert(ValidComponent<Position>);
+static_assert(ValidComponent<Velocity>);
+
 
 #endif //COMPONENT_H
