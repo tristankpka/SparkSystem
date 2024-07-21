@@ -5,10 +5,9 @@
 #ifndef ENTITYMANAGER_H
 #define ENTITYMANAGER_H
 
-#include "ComponentManager.h"
-#include "Entity.h"
-
-#include <unordered_set>
+#include <cstdint>        // for uint16_t
+#include <unordered_set>  // for unordered_set
+#include "Entity.h"       // for hash, Entity
 
 constexpr std::uint16_t MAX_ENTITIES = 65535;
 
@@ -22,10 +21,8 @@ public:
     [[nodiscard]] const std::unordered_set<Entity>& getEntities() const;
 
 private:
-    Entity::Id nextId = 1;
-    std::unordered_set<Entity> entities;
+    Entity::Id m_nextId = 1;
+    std::unordered_set<Entity> m_entities;
 };
-
-#include "EntityManager.tpp"
 
 #endif //ENTITYMANAGER_H

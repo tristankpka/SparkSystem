@@ -5,13 +5,15 @@
 #ifndef COMPONENTMANAGER_H
 #define COMPONENTMANAGER_H
 
-#include <unordered_map>
-#include <array>
-#include <cstdint>
-#include <typeindex>
-
-#include "Entity.h"
-#include "Component.h"
+#include <cstdint>                // for uint8_t
+#include <memory>                 // for unique_ptr
+#include <typeindex>              // for type_index
+#include <unordered_map>          // for unordered_map
+#include <variant>                // for variant
+#include "Component.h"            // for Component, ValidComponent
+#include "Entity.h"               // for Entity
+#include "components/Position.h"  // for Position
+#include "components/Velocity.h"  // for Velocity
 
 constexpr std::uint8_t MAX_COMPONENTS_PER_ENTITY = 128;
 
@@ -39,7 +41,7 @@ public:
 
 private:
     using ComponentVariant = std::variant<std::unique_ptr<Component<Position>>, std::unique_ptr<Component<Velocity>>>;
-    std::unordered_map<Entity::Id, std::unordered_map<std::type_index, ComponentVariant>> componentMaps;
+    std::unordered_map<Entity::Id, std::unordered_map<std::type_index, ComponentVariant>> m_componentMaps;
 };
 
 #include "ComponentManager.tpp"

@@ -5,9 +5,11 @@
 #ifndef COORDINATOR_H
 #define COORDINATOR_H
 
-#include "ComponentManager.h"
-#include "EntityManager.h"
-#include "SystemManager.h"
+#include <memory>              // for unique_ptr, shared_ptr
+#include "ComponentManager.h"  // for ComponentType, ComponentManager
+#include "Entity.h"            // for Entity
+#include "EntityManager.h"     // for EntityManager
+#include "SystemManager.h"     // for SystemManager
 
 class Coordinator {
 public:
@@ -39,9 +41,9 @@ public:
     auto getComponentQuery();
 
 private:
-    std::unique_ptr<ComponentManager> componentManager;
-    std::unique_ptr<EntityManager> entityManager;
-    std::unique_ptr<SystemManager> systemManager;
+    std::unique_ptr<ComponentManager> m_componentManager;
+    std::unique_ptr<EntityManager> m_entityManager;
+    std::unique_ptr<SystemManager> m_systemManager;
 };
 
 #include "Coordinator.tpp"

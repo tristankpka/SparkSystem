@@ -1,11 +1,18 @@
 //
 // Created by Tristan Klempka on 20/07/2024.
 //
-#include <catch2/catch_test_macros.hpp>
-#include "Coordinator.h"
-#include "MovementSystem.h"
-#include "components/Position.h"
-#include "components/Velocity.h"
+
+#include <catch2/catch_test_macros.hpp>  // for operator""_catch_sr, StringRef
+#include <memory>                        // for shared_ptr
+#include <utility>                       // for move
+#include <variant>                       // for get
+#include "ComponentManager.h"          // for ComponentManager::hasComponent
+#include "Coordinator.h"                 // for Coordinator
+#include "Coordinator.h"               // for Coordinator::hasComponent
+#include "MovementSystem.h"              // for MovementSystem
+#include "SystemManager.h"             // for SystemManager::registerSystem
+#include "components/Position.h"         // for Position
+#include "components/Velocity.h"         // for Velocity
 
 TEST_CASE("CreateEntity") {
     Coordinator coordinator;

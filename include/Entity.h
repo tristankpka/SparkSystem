@@ -5,8 +5,10 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
-#include <cstdint>
-#include <functional>
+#include <cstddef>     // for size_t
+#include <cstdint>     // for uint32_t
+#include <functional>  // for hash
+#include <memory>      // for hash
 
 class Entity {
 public:
@@ -22,7 +24,7 @@ public:
     bool operator<(const Entity& other) const;
 
 private:
-    Id id;
+    Id m_id;
 };
 
 // Custom hash function for Entity

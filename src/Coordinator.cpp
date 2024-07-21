@@ -3,22 +3,23 @@
 //
 
 #include "Coordinator.h"
+#include <stdexcept>  // for runtime_error
 
 void Coordinator::init() {
-    componentManager = std::make_unique<ComponentManager>();
-    entityManager = std::make_unique<EntityManager>();
-    systemManager = std::make_unique<SystemManager>();
+    m_componentManager = std::make_unique<ComponentManager>();
+    m_entityManager = std::make_unique<EntityManager>();
+    m_systemManager = std::make_unique<SystemManager>();
 }
 
 Entity::Id Coordinator::createEntity() const {
-    return entityManager->createEntity();
+    return m_entityManager->createEntity();
 }
 
 void Coordinator::destroyEntity(const Entity::Id entityId) const {
-    if(entityManager->isValid(entityId)) {
-        entityManager->destroyEntity(entityId);
+    if(m_entityManager->isValid(entityId)) {
+        m_entityManager->destroyEntity(entityId);
         // TODO: add destroyed event
-        componentManager->entityDestroyed(entityId);
+        m_componentManager->entityDestroyed(entityId);
         // systemManager->entityDestroyed(entityId);
     } else {
         throw std::runtime_error("Entity is not valid");

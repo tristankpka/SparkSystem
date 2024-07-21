@@ -5,5 +5,5 @@
 #include "ComponentManager.h"
 
 void ComponentManager::entityDestroyed(const Entity::Id entityId) {
-    componentMaps.erase(entityId);
+    m_componentMaps.erase(entityId);
 }

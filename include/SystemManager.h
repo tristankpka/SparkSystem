@@ -5,10 +5,10 @@
 #ifndef SYSTEMMANAGER_H
 #define SYSTEMMANAGER_H
 
-#include "System.h"
-#include <vector>
-#include <typeindex>
-#include <unordered_map>
+#include <memory>         // for shared_ptr
+#include <typeindex>      // for hash, type_index
+#include <unordered_map>  // for unordered_map
+class System;
 
 class SystemManager {
 public:
@@ -18,7 +18,7 @@ public:
     void updateSystems() const;
 
 private:
-    std::unordered_map<std::type_index, std::shared_ptr<System>> systems;
+    std::unordered_map<std::type_index, std::shared_ptr<System>> m_systems;
 };
 
 #include "SystemManager.tpp"

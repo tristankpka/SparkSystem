@@ -4,20 +4,20 @@
 
 #include "Entity.h"
 
-Entity::Entity(const Id id) : id(id) {}
+Entity::Entity(const Id id) : m_id(id) {}
 
 Entity::Id Entity::getId() const {
-    return id;
+    return m_id;
 }
 
 bool Entity::operator==(const Entity& other) const {
-    return id == other.id;
+    return m_id == other.m_id;
 }
 
 bool Entity::operator!=(const Entity& other) const {
-    return id != other.id;
+    return m_id != other.m_id;
 }
 
 bool Entity::operator<(const Entity& other) const {
-    return id < other.id;
+    return m_id < other.m_id;
 }

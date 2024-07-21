@@ -1,0 +1,66 @@
+name: C++ CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        arch: [x86]
+        exclude:
+          - os: windows-latest
+            arch: arm64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies on Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip cmake g++-multilib
+          pip3 install conan
+          conan profile detect
+          echo "[conf]" >> ~/.conan2/profiles/default
+          echo "tools.system.package_manager:mode=install" >> ~/.conan2/profiles/default
+          echo "tools.system.package_manager:sudo=True" >> ~/.conan2/profiles/default
+
+      - name: Install dependencies on macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew update
+          brew install cmake conan
+          conan profile detect
+          conan config set tools.system.package_manager:mode=install
+          conan config set tools.system.package_manager:sudo=True
+
+      - name: Install dependencies on Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install python3 cmake
+          python -m pip install --upgrade pip
+          pip install conan
+          conan profile detect
+
+      - name: Create build directory
+        run: mkdir build
+        working-directory: ${{ github.workspace }}
+
+      - name: Install dependencies with Conan
+        run: conan install .. --build=missing -c tools.system.package_manager:mode=install
+        working-directory: ${{ github.workspace }}/build
+
+      - name: Configure CMake
+        run: cmake .. -G "Unix Makefiles" -DCMAKE_CXX_STANDARD=20 -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCMAKE_BUILD_TYPE=Debug
+        working-directory: ${{ github.workspace }}/build
+
+      - name: Build
+        run: cmake --build .
+        working-directory: ${{ github.workspace }}/build
+
+      - name: Run tests
+        run: ctest
+        working-directory: ${{ github.workspace }}/build
