@@ -15,7 +15,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clan
             -Werror
             -Wconversion
             -Wsign-conversion
-            -Wshadow
             -Wnon-virtual-dtor
             -Wold-style-cast
             -Wcast-align
@@ -59,18 +58,23 @@ add_executable(Engine main.cpp
         include/Entity.h
         src/Entity.cpp
         include/System.h
-        src/MovementSystem.cpp
-        include/MovementSystem.h
         include/components/Velocity.h
-        include/components/Position.h
         src/EntityManager.cpp
         include/EntityManager.h
         src/SystemManager.cpp
         include/SystemManager.h
         include/SystemManager.tpp
-        include/Coordinator.h
-        src/Coordinator.cpp
-        include/Coordinator.tpp
+        include/World.h
+        src/World.cpp
+        include/World.tpp
+        src/Window.cpp
+        include/Window.h
+        include/components/Drawable.h
+        include/components/Node.h
+        include/EventDispatcher.h
+        include/HierarchySystem.h
+        src/HierarchySystem.cpp
+        src/EventDispatcher.cpp
 )
 
 target_include_directories(Engine PRIVATE include)
@@ -88,18 +92,23 @@ add_executable(EngineTests
         include/Entity.h
         src/Entity.cpp
         include/System.h
-        src/MovementSystem.cpp
-        include/MovementSystem.h
         include/components/Velocity.h
-        include/components/Position.h
         src/EntityManager.cpp
         include/EntityManager.h
         src/SystemManager.cpp
         include/SystemManager.h
         include/SystemManager.tpp
-        include/Coordinator.h
-        src/Coordinator.cpp
-        include/Coordinator.tpp
+        include/World.h
+        src/World.cpp
+        include/World.tpp
+        src/Window.cpp
+        include/Window.h
+        include/components/Drawable.h
+        include/components/Node.h
+        include/EventDispatcher.h
+        include/HierarchySystem.h
+        src/HierarchySystem.cpp
+        src/EventDispatcher.cpp
 )
 
 target_include_directories(EngineTests PRIVATE include)

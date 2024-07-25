@@ -28,23 +28,6 @@ jobs:
           echo "tools.system.package_manager:mode=install" >> ~/.conan2/profiles/default
           echo "tools.system.package_manager:sudo=True" >> ~/.conan2/profiles/default
 
-      - name: Install dependencies on macOS
-        if: matrix.os == 'macos-latest'
-        run: |
-          brew update
-          brew install cmake conan
-          conan profile detect
-          conan config set tools.system.package_manager:mode=install
-          conan config set tools.system.package_manager:sudo=True
-
-      - name: Install dependencies on Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-          choco install python3 cmake
-          python -m pip install --upgrade pip
-          pip install conan
-          conan profile detect
-
       - name: Create build directory
         run: mkdir build
         working-directory: ${{ github.workspace }}

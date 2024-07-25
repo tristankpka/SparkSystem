@@ -7,7 +7,9 @@
 
 #include <type_traits>
 #include <utility>
-#include "components/Position.h"
+
+#include "components/Drawable.h"
+#include "components/Node.h"
 #include "components/Velocity.h"
 
 // Concept to check if a type is a valid component (i.e., is a plain data structure)
@@ -29,7 +31,7 @@ public:
     explicit Component(T data) : m_value(std::move(data)) {}
 };
 
-static_assert(ValidComponent<Position>);
+static_assert(ValidComponent<Node>);
 static_assert(ValidComponent<Velocity>);
 
 
