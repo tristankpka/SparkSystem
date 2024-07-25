@@ -12,7 +12,8 @@
 #include <variant>                // for variant
 #include "Component.h"            // for Component, ValidComponent
 #include "Entity.h"               // for Entity
-#include "components/Position.h"  // for Position
+#include "components/Drawable.h"  // for Drawable
+#include "components/Node.h"      // for Node
 #include "components/Velocity.h"  // for Velocity
 
 constexpr std::uint8_t MAX_COMPONENTS_PER_ENTITY = 128;
@@ -40,7 +41,11 @@ public:
     void entityDestroyed(Entity::Id entityId);
 
 private:
-    using ComponentVariant = std::variant<std::unique_ptr<Component<Position>>, std::unique_ptr<Component<Velocity>>>;
+    using ComponentVariant = std::variant<
+        std::unique_ptr<Component<Velocity>>,
+        std::unique_ptr<Component<Node>>,
+        std::unique_ptr<Component<Drawable>>
+    >;
     std::unordered_map<Entity::Id, std::unordered_map<std::type_index, ComponentVariant>> m_componentMaps;
 };
 

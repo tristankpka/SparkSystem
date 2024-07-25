@@ -5,19 +5,25 @@
 #ifndef COORDINATOR_H
 #define COORDINATOR_H
 
+#include <functional>          // for function
 #include <memory>              // for unique_ptr, shared_ptr
+#include <optional>            // for optional
+#include <unordered_set>       // for unordered_set
 #include "ComponentManager.h"  // for ComponentType, ComponentManager
 #include "Entity.h"            // for Entity
 #include "EntityManager.h"     // for EntityManager
+#include "EventDispatcher.h"   // for EventDispatcher
 #include "SystemManager.h"     // for SystemManager
 
-class Coordinator {
+class World {
 public:
     void init();
 
-    [[nodiscard]] Entity::Id createEntity() const;
+    [[nodiscard]] Entity::Id createEntity();
 
     void destroyEntity(Entity::Id entityId) const;
+
+    void addChild(Entity::Id parentId, Entity::Id childId) const;
 
     template<ComponentType T>
     void addComponent(Entity::Id entityId, T component);
@@ -40,12 +46,17 @@ public:
     template<typename... Components>
     auto getComponentQuery();
 
+    [[nodiscard]] EventDispatcher& getEventDispatcher() const {
+        return *m_eventDispatcher;
+    }
+
 private:
     std::unique_ptr<ComponentManager> m_componentManager;
     std::unique_ptr<EntityManager> m_entityManager;
     std::unique_ptr<SystemManager> m_systemManager;
+    std::unique_ptr<EventDispatcher> m_eventDispatcher;
 };
 
-#include "Coordinator.tpp"
+#include "World.tpp"
 
 #endif //COORDINATOR_H
