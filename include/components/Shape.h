@@ -5,10 +5,10 @@
 #ifndef DRAWABLE_H
 #define DRAWABLE_H
 
-#include <SFML/Graphics/Drawable.hpp>
+#include <SFML/Graphics/Shape.hpp>
 
-struct Drawable {
-    std::unique_ptr<sf::Drawable> drawable;
+struct Shape {
+    std::unique_ptr<sf::Shape> shape;
 };
 
 #endif //DRAWABLE_H

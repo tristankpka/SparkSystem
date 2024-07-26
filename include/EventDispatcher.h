@@ -19,8 +19,7 @@ enum class EventType {
     EntityCreated,
     EntityDestroyed,
 
-    GlobalTransformChanged,
-    LocalTransformChanged
+    TransformChanged,
 };
 
 struct Event {

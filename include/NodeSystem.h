@@ -14,14 +14,15 @@
 #include "Entity.h"                     // for Entity
 #include "System.h"                     // for System
 #include "components/Node.h"            // for Node
-class EventDispatcher;
+class EventDispatcher;  // lines 18-18
+class World;
 
-class HierarchySystem : public System {
+class NodeSystem : public System {
 public:
     using QueryFunction = std::function<void(std::function<void(Entity::Id, Node&)>,
                                              std::optional<std::unordered_set<Entity::Id>>)>;
 
-    explicit HierarchySystem(QueryFunction query, EventDispatcher& dispatcher);
+    explicit NodeSystem(World& world, EventDispatcher& dispatcher);
 
     void update() override;
 
@@ -32,11 +33,7 @@ private:
     std::unordered_map<Entity::Id, Entity::Id> m_parentMap;
     std::unordered_map<Entity::Id, std::vector<Entity::Id>> m_childNodes;
 
-    void onEventEntityCreated(Entity::Id entityId);
-    void onEventEntityChildAdded(Entity::Id parentId, Entity::Id childId);
-    void propagateTransform(Entity::Id parentId, const sf::Transform& parentTransform);
-    void onEventGlobalTransformChanged(Entity::Id entityId);
-    void onEventLocalTransformChanged(Entity::Id entityId);
+    void onEventEntityChildAdded(Entity::Id parentId, Entity::Id childId) const;
 };
 
 #endif //HIERARCHYSYSTEM_H

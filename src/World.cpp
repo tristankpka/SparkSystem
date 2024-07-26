@@ -3,11 +3,8 @@
 //
 
 #include "World.h"
-
-#include <stdexcept>             // for runtime_error
-#include "ComponentManager.h"  // for ComponentManager::addComponent
-#include "World.tpp"             // for World::addComponent
-#include "components/Node.h"     // for Node
+#include <stdexcept>           // for runtime_error
+#include "ComponentManager.h"  // for ComponentManager
 
 void World::init() {
     m_componentManager = std::make_unique<ComponentManager>();
@@ -16,11 +13,9 @@ void World::init() {
     m_eventDispatcher = std::make_unique<EventDispatcher>();
 }
 
-Entity::Id World::createEntity() {
-    auto entityId = m_entityManager->createEntity();
-    const Node defaultNode;
-    addComponent<Node>(entityId, defaultNode);  // Add Node component by default
-    m_eventDispatcher->dispatch({EventType::EntityCreated, entityId});
+Entity::Id World::createEntity() const {
+    const auto entityId = m_entityManager->createEntity();
+    m_eventDispatcher->dispatch(EventBuilder(EventType::EntityCreated, entityId).build());
     return entityId;
 }
 

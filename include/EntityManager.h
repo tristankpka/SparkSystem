@@ -21,7 +21,7 @@ public:
     [[nodiscard]] const std::unordered_set<Entity>& getEntities() const;
 
 private:
-    Entity::Id m_nextId = 1;
+    Entity::Id m_nextId = 0;
     std::unordered_set<Entity> m_entities;
 };
 

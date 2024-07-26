@@ -69,12 +69,18 @@ add_executable(Engine main.cpp
         include/World.tpp
         src/Window.cpp
         include/Window.h
-        include/components/Drawable.h
+        include/components/Shape.h
         include/components/Node.h
         include/EventDispatcher.h
-        include/HierarchySystem.h
-        src/HierarchySystem.cpp
+        include/NodeSystem.h
+        src/NodeSystem.cpp
         src/EventDispatcher.cpp
+        src/RenderingSystem.cpp
+        include/RenderingSystem.h
+        include/EntityFactory.h
+        include/TransformManager.h
+        src/TransformManager.cpp
+        src/EntityFactory.cpp
 )
 
 target_include_directories(Engine PRIVATE include)
@@ -103,12 +109,18 @@ add_executable(EngineTests
         include/World.tpp
         src/Window.cpp
         include/Window.h
-        include/components/Drawable.h
+        include/components/Shape.h
         include/components/Node.h
         include/EventDispatcher.h
-        include/HierarchySystem.h
-        src/HierarchySystem.cpp
+        include/NodeSystem.h
+        src/NodeSystem.cpp
         src/EventDispatcher.cpp
+        src/RenderingSystem.cpp
+        include/RenderingSystem.h
+        include/EntityFactory.h
+        include/TransformManager.h
+        src/TransformManager.cpp
+        src/EntityFactory.cpp
 )
 
 target_include_directories(EngineTests PRIVATE include)

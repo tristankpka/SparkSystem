@@ -4,22 +4,26 @@
 
 #include <any>
 #include <catch2/catch_test_macros.hpp>  // for operator""_catch_sr, StringRef
+#include <catch2/catch_approx.hpp>
 #include <memory>                        // for shared_ptr
 #include <utility>                       // for move
 #include <variant>                       // for get
 #include "ComponentManager.h"          // for ComponentManager::hasComponent
-#include "HierarchySystem.h"
+#include "EntityFactory.h"
+#include "NodeSystem.h"
 #include "World.h"                 // for Coordinator
 #include "World.h"               // for Coordinator::hasComponent
 #include "SystemManager.h"             // for SystemManager::registerSystem
-#include "components/Velocity.h"         // for Velocity
+#include "components/Velocity.h"
+#include "TransformManager.h"
+#include "EventDispatcher.h"// for Velocity
 
 TEST_CASE("CreateEntity") {
     World world;
     world.init();
 
     const auto entityId = world.createEntity();
-    REQUIRE(entityId == 1);
+    REQUIRE(entityId == 0);
 }
 
 TEST_CASE("AddAndGetComponent") {
@@ -30,7 +34,7 @@ TEST_CASE("AddAndGetComponent") {
     const Node node;
     coordinator.addComponent<Node>(entityId, node);
 
-    REQUIRE(node.global_transform == sf::Transform());
+    REQUIRE(node.transform == sf::Transform());
 }
 
 TEST_CASE("HasComponent") {
@@ -66,7 +70,7 @@ TEST_CASE("Event Dispatcher") {
         bool eventTriggered = false;
         dispatcher.subscribe(EventType::EntityUpdated, [&](const Event& event) {
             eventTriggered = true;
-            REQUIRE(event.entityId == 1);
+            REQUIRE(event.entityId == 0);
         });
 
         auto entityId = world.createEntity();
@@ -76,228 +80,82 @@ TEST_CASE("Event Dispatcher") {
     }
 }
 
-TEST_CASE("Node hierarchy and transform propagation") {
-    // Window window(sf::VideoMode(800, 600), "Test Window");
-    World world;
-    world.init();
-    auto hierarchyQuery = world.getComponentQuery<Node>();
-    auto hierarchySystem = world.registerSystem<HierarchySystem>(hierarchyQuery, world.getEventDispatcher());
-
-    // Create grandparent entity
-    auto grandparentEntity = world.createEntity();
-    world.getComponent<Node>(grandparentEntity).global_transform.translate(5.0f, 5.0f);
-    world.getEventDispatcher().dispatch({EventType::GlobalTransformChanged, grandparentEntity});
-    // Create parent entity
-    auto parentEntity = world.createEntity();
-    world.getComponent<Node>(parentEntity).local_transform.translate(3.0f, 3.0f);
-    world.getEventDispatcher().dispatch({EventType::LocalTransformChanged, parentEntity});
-    // Create child entity
-    auto childEntity = world.createEntity();
-    world.getComponent<Node>(childEntity).local_transform.translate(1.0f, 1.0f);
-    world.getEventDispatcher().dispatch({EventType::LocalTransformChanged, childEntity});
-
-    std::cout << "Initial transforms:" << std::endl;
-    std::cout << "Grandparent transform: (" << world.getComponent<Node>(grandparentEntity).global_transform.getMatrix()[12] << ", " << world.getComponent<Node>(grandparentEntity).global_transform.getMatrix()[13] << ")" << std::endl;
-    std::cout << "Parent transform: (" << world.getComponent<Node>(parentEntity).local_transform.getMatrix()[12] << ", " << world.getComponent<Node>(parentEntity).local_transform.getMatrix()[13] << ")" << std::endl;
-    std::cout << "Child transform: (" << world.getComponent<Node>(childEntity).local_transform.getMatrix()[12] << ", " << world.getComponent<Node>(childEntity).local_transform.getMatrix()[13] << ")" << std::endl;
-
-    // Add parent to grandparent
-    world.addChild(grandparentEntity, parentEntity);
-
-    // Add child to parent
-    world.addChild(parentEntity, childEntity);
-
-    // Check transforms
-    auto& grandparentTransform = world.getComponent<Node>(grandparentEntity).global_transform;
-    auto& parentTransform = world.getComponent<Node>(parentEntity).global_transform;
-    auto& childTransform = world.getComponent<Node>(childEntity).global_transform;
-
-    // Calculate expected positions
-    sf::Transform expectedGrandparentTransform;
-    expectedGrandparentTransform.translate(5.0f, 5.0f);
-
-    sf::Transform expectedParentTransform = expectedGrandparentTransform;
-    expectedParentTransform.translate(3.0f, 3.0f);
-
-    sf::Transform expectedChildTransform = expectedParentTransform;
-    expectedChildTransform.translate(1.0f, 1.0f);
-
-    sf::Vector2f grandparentPosition = grandparentTransform.transformPoint(0, 0);
-    sf::Vector2f parentPosition = parentTransform.transformPoint(0, 0);
-    sf::Vector2f childPosition = childTransform.transformPoint(0, 0);
-
-    sf::Vector2f expectedGrandparentPosition = expectedGrandparentTransform.transformPoint(0, 0);
-    sf::Vector2f expectedParentPosition = expectedParentTransform.transformPoint(0, 0);
-    sf::Vector2f expectedChildPosition = expectedChildTransform.transformPoint(0, 0);
-
-    std::cout << "Grandparent position: (" << grandparentPosition.x << ", " << grandparentPosition.y << ")\n";
-    std::cout << "Expected Grandparent position: (" << expectedGrandparentPosition.x << ", " << expectedGrandparentPosition.y << ")\n";
-    std::cout << "Parent position: (" << parentPosition.x << ", " << parentPosition.y << ")\n";
-    std::cout << "Expected Parent position: (" << expectedParentPosition.x << ", " << expectedParentPosition.y << ")\n";
-    std::cout << "Child position: (" << childPosition.x << ", " << childPosition.y << ")\n";
-    std::cout << "Expected Child position: (" << expectedChildPosition.x << ", " << expectedChildPosition.y << ")\n";
-
-    REQUIRE(grandparentPosition == expectedGrandparentPosition);
-    REQUIRE(parentPosition == expectedParentPosition);
-    REQUIRE(childPosition == expectedChildPosition);
-}
-
 class MockWorld {
 public:
-    MockWorld() {
-        m_dispatcher = std::make_unique<EventDispatcher>();
+    void init() {
+        // Initialization logic if necessary
     }
 
     Entity::Id createEntity() {
-        Entity::Id id = ++m_lastId;
-        m_entities.insert(id);
-        return id;
+        Entity::Id newId = nextEntityId++;
+        entities[newId] = {};
+        return newId;
     }
 
-    template<typename T>
+    template <typename T>
     void addComponent(Entity::Id entityId, T component) {
-        m_components[entityId] = component;
+        entities[entityId].emplace(typeid(T).hash_code(), std::make_any<T>(std::move(component)));
     }
 
-    template<typename T>
+    template <typename T>
     T& getComponent(Entity::Id entityId) {
-        return std::any_cast<T&>(m_components[entityId]);
+        return std::any_cast<T&>(entities[entityId][typeid(T).hash_code()]);
     }
 
     void addChild(Entity::Id parentId, Entity::Id childId) {
-        m_dispatcher->dispatch(EventBuilder(EventType::EntityChildAdded, parentId).withParentId(parentId).withChildId(childId).build());
-
+        getComponent<Node>(parentId).children.insert(childId);
+        getComponent<Node>(childId).parent = parentId;
     }
 
     EventDispatcher& getEventDispatcher() {
-        return *m_dispatcher;
+        return dispatcher;
     }
 
-    std::function<void(std::function<void(Entity::Id, Node&)>, std::optional<std::unordered_set<Entity::Id>>)> getComponentQuery() {
-        return [this](std::function<void(Entity::Id, Node&)> callback, std::optional<std::unordered_set<Entity::Id>> ids) {
-            if (ids.has_value()) {
-                for (auto id : ids.value()) {
-                    if (m_components.find(id) != m_components.end()) {
-                        callback(id, std::any_cast<Node&>(m_components[id]));
+    auto getComponentQuery() {
+        return [this](auto callback, auto filter) {
+            for (auto& [entityId, components] : entities) {
+                if (filter.has_value()) {
+                    if (filter->count(entityId) == 0) {
+                        continue;
                     }
                 }
-            } else {
-                for (auto& [id, component] : m_components) {
-                    callback(id, std::any_cast<Node&>(component));
+                if (components.count(typeid(Node).hash_code()) > 0) {
+                    callback(entityId, std::any_cast<Node&>(components[typeid(Node).hash_code()]));
                 }
             }
         };
     }
 
 private:
-    Entity::Id m_lastId = 0;
-    std::unordered_set<Entity::Id> m_entities;
-    std::unordered_map<Entity::Id, std::any> m_components;
-    std::unique_ptr<EventDispatcher> m_dispatcher;
+    Entity::Id nextEntityId = 1;
+    std::unordered_map<Entity::Id, std::unordered_map<size_t, std::any>> entities;
+    EventDispatcher dispatcher;
 };
 
-// Test for EntityCreated Event
-TEST_CASE("HierarchySystem handles EntityCreated event") {
-    MockWorld world;
+TEST_CASE("TransformManager applyTransformation", "[TransformManager]") {
+    World world;
+    world.init();
+    const TransformManager transformManager(world);
+    const EntityFactory factory(world);
 
-    auto hierarchyQuery = world.getComponentQuery();
-    auto hierarchySystem = std::make_shared<HierarchySystem>(hierarchyQuery, world.getEventDispatcher());
+    // Create origin
+    const auto origin = factory.createCircleEntity(1.0f, sf::Color::White);
+    transformManager.applyTranslation(origin, 400.f, 300.f);
+    transformManager.applyRotation(origin, 0.f);
 
-    // Create an entity
-    auto entity = world.createEntity();
-    Node node;
-    node.global_transform.translate(5.0f, 5.0f);
-    world.addComponent<Node>(entity, node);
-    world.getEventDispatcher().dispatch(Event{EventType::EntityCreated, entity});
+    // Create blue circle
+    const auto parentEntity = factory.createCircleEntity(25.0f, sf::Color::Transparent, sf::Color::Blue, 1.0f);
+    world.addChild(origin, parentEntity);
+    transformManager.applyTransformation(parentEntity, 90.f, 100.f, 0.f);
 
-    // Verify the transform
-    auto& transform = world.getComponent<Node>(entity).global_transform;
-    sf::Vector2f position = transform.transformPoint(0, 0);
-    REQUIRE(position == sf::Vector2f(5.0f, 5.0f));
-}
+    // Get the transformed point
+    const auto& originTransform = world.getComponent<Node>(origin).transform;
+    const auto& childTransform = world.getComponent<Node>(parentEntity).transform;
+    const sf::Vector2f transformedPoint = childTransform.transformPoint(originTransform.transformPoint(0, 0));
 
-// Test for EntityChildAdded Event
-TEST_CASE("HierarchySystem handles EntityChildAdded event") {
-    MockWorld world;
+    // Expected position after 90 degree rotation around the parent (400, 300)
+    const sf::Vector2f expectedPoint(400.f, 400.f);
 
-    auto hierarchyQuery = world.getComponentQuery();
-    auto hierarchySystem = std::make_shared<HierarchySystem>(hierarchyQuery, world.getEventDispatcher());
-
-    // Create parent and child entities
-    auto parentEntity = world.createEntity();
-    Node parentNode;
-    parentNode.global_transform.translate(5.0f, 5.0f);
-    world.addComponent<Node>(parentEntity, parentNode);
-    world.getEventDispatcher().dispatch(Event{EventType::EntityCreated, parentEntity});
-
-    auto childEntity = world.createEntity();
-    Node childNode;
-    childNode.local_transform.translate(3.0f, 3.0f);
-    world.addComponent<Node>(childEntity, childNode);
-    world.getEventDispatcher().dispatch(Event{EventType::EntityCreated, childEntity});
-
-    // Add child to parent
-    world.addChild(parentEntity, childEntity);
-
-    // Verify the transform
-    auto& transform = world.getComponent<Node>(childEntity).global_transform;
-    sf::Vector2f position = transform.transformPoint(0, 0);
-    REQUIRE(position == sf::Vector2f(8.0f, 8.0f));
-}
-
-// Test for GlobalTransformChanged Event
-TEST_CASE("HierarchySystem handles GlobalTransformChanged event") {
-    MockWorld world;
-
-    auto hierarchyQuery = world.getComponentQuery();
-    auto hierarchySystem = std::make_shared<HierarchySystem>(hierarchyQuery, world.getEventDispatcher());
-
-    // Create an entity
-    auto entity = world.createEntity();
-    Node node;
-    node.global_transform.translate(5.0f, 5.0f);
-    world.addComponent<Node>(entity, node);
-    world.getEventDispatcher().dispatch(Event{EventType::EntityCreated, entity});
-
-    // Change the global transform
-    world.getComponent<Node>(entity).global_transform.translate(2.0f, 2.0f);
-    world.getEventDispatcher().dispatch(Event{EventType::GlobalTransformChanged, entity});
-
-    // Verify the transform
-    auto& transform = world.getComponent<Node>(entity).global_transform;
-    sf::Vector2f position = transform.transformPoint(0, 0);
-    REQUIRE(position == sf::Vector2f(7.0f, 7.0f));
-}
-
-// Test for LocalTransformChanged Event
-TEST_CASE("HierarchySystem handles LocalTransformChanged event") {
-    MockWorld world;
-
-    auto hierarchyQuery = world.getComponentQuery();
-    auto hierarchySystem = std::make_shared<HierarchySystem>(hierarchyQuery, world.getEventDispatcher());
-
-    // Create parent and child entities
-    auto parentEntity = world.createEntity();
-    Node parentNode;
-    parentNode.global_transform.translate(5.0f, 5.0f);
-    world.addComponent<Node>(parentEntity, parentNode);
-    world.getEventDispatcher().dispatch(Event{EventType::EntityCreated, parentEntity});
-
-    auto childEntity = world.createEntity();
-    Node childNode;
-    childNode.local_transform.translate(3.0f, 3.0f);
-    world.addComponent<Node>(childEntity, childNode);
-    world.getEventDispatcher().dispatch(Event{EventType::EntityCreated, childEntity});
-
-    // Add child to parent
-    world.addChild(parentEntity, childEntity);
-
-    // Change the local transform
-    world.getComponent<Node>(childEntity).local_transform.translate(1.0f, 1.0f);
-    world.getEventDispatcher().dispatch(Event{EventType::LocalTransformChanged, childEntity});
-
-    // Verify the transform
-    auto& transform = world.getComponent<Node>(childEntity).global_transform;
-    sf::Vector2f position = transform.transformPoint(0, 0);
-    REQUIRE(position == sf::Vector2f(9.0f, 9.0f));
+    REQUIRE(transformedPoint.x == Catch::Approx(expectedPoint.x).margin(1e-5));
+    REQUIRE(transformedPoint.y == Catch::Approx(expectedPoint.y).margin(1e-5));
 }
