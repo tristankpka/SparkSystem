@@ -8,7 +8,7 @@
 #include <memory>         // for shared_ptr
 #include <typeindex>      // for hash, type_index
 #include <unordered_map>  // for unordered_map
-class System;
+class System;  // lines 12-12
 
 class SystemManager {
 public:

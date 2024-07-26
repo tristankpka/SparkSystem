@@ -5,10 +5,7 @@
 #ifndef COORDINATOR_H
 #define COORDINATOR_H
 
-#include <functional>          // for function
 #include <memory>              // for unique_ptr, shared_ptr
-#include <optional>            // for optional
-#include <unordered_set>       // for unordered_set
 #include "ComponentManager.h"  // for ComponentType, ComponentManager
 #include "Entity.h"            // for Entity
 #include "EntityManager.h"     // for EntityManager
@@ -19,7 +16,7 @@ class World {
 public:
     void init();
 
-    [[nodiscard]] Entity::Id createEntity();
+    [[nodiscard]] Entity::Id createEntity() const;
 
     void destroyEntity(Entity::Id entityId) const;
 

@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "components/Drawable.h"
+#include "components/Shape.h"
 #include "components/Node.h"
 #include "components/Velocity.h"
 
@@ -33,6 +33,7 @@ public:
 
 static_assert(ValidComponent<Node>);
 static_assert(ValidComponent<Velocity>);
+static_assert(ValidComponent<Shape>);
 
 
 #endif //COMPONENT_H

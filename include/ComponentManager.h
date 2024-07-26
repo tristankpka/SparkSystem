@@ -12,7 +12,7 @@
 #include <variant>                // for variant
 #include "Component.h"            // for Component, ValidComponent
 #include "Entity.h"               // for Entity
-#include "components/Drawable.h"  // for Drawable
+#include "components/Shape.h"  // for Drawable
 #include "components/Node.h"      // for Node
 #include "components/Velocity.h"  // for Velocity
 
@@ -44,7 +44,7 @@ private:
     using ComponentVariant = std::variant<
         std::unique_ptr<Component<Velocity>>,
         std::unique_ptr<Component<Node>>,
-        std::unique_ptr<Component<Drawable>>
+        std::unique_ptr<Component<Shape>>
     >;
     std::unordered_map<Entity::Id, std::unordered_map<std::type_index, ComponentVariant>> m_componentMaps;
 };

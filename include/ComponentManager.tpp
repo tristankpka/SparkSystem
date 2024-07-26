@@ -4,7 +4,13 @@
 
 template<ComponentType T>
 void ComponentManager::addComponent(const Entity::Id entityId, T component) {
-    m_componentMaps[entityId][typeid(T)] = std::make_unique<Component<T>>(std::move(component));
+    auto& entityComponents = m_componentMaps[entityId];
+    const std::type_index typeIndex = typeid(T);
+    // Check if the component type already exists
+    if (entityComponents.contains(typeIndex)) {
+        throw std::runtime_error("Component already exists for this entity");
+    }
+    entityComponents[typeIndex] = std::make_unique<Component<T>>(std::move(component));
 }
 
 template<ComponentType T>
