@@ -28,10 +28,6 @@ public:
 
 private:
     QueryFunction m_query;
-    std::unordered_set<Entity::Id> m_rootNodes;
-    std::unordered_map<Entity::Id, sf::Transform> m_nodeTransforms;
-    std::unordered_map<Entity::Id, Entity::Id> m_parentMap;
-    std::unordered_map<Entity::Id, std::vector<Entity::Id>> m_childNodes;
 
     void onEventEntityChildAdded(Entity::Id parentId, Entity::Id childId) const;
 };

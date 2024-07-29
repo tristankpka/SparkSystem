@@ -9,7 +9,6 @@
 #include <memory>                          // for unique_ptr
 #include "ComponentManager.h"            // for ComponentManager::getCompo...
 #include "World.h"                         // for World
-#include "World.h"                       // for World::getComponentQuery
 
 RenderingSystem::RenderingSystem(World& world, sf::RenderWindow& window)
     : m_query(world.getComponentQuery<Node, Shape>()), m_window(window) {}
@@ -23,7 +22,7 @@ void RenderingSystem::update() {
 }
 
 void RenderingSystem::doDraw(const Entity::Id id, const sf::Transform& parentTransform) {
-    m_query([this, parentTransform](Entity::Id, const Node& node, const Shape& renderable) {
+    m_query([this, parentTransform](Entity::Id, Node& node, Shape& renderable) {
             m_window.draw(*renderable.shape, node.transform * parentTransform);
         for (const auto child: node.children) {
             doDraw(child, node.transform * parentTransform);

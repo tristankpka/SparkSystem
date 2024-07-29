@@ -14,7 +14,7 @@
 #include "components/Node.h"   // for Node
 #include "components/Shape.h"  // for Shape
 class World;
-namespace sf { class Drawable; }
+namespace sf { class Shape; }
 namespace sf { class RenderWindow; }
 namespace sf { class Transform; }
 
